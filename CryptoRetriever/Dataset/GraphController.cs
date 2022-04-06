@@ -33,6 +33,7 @@ namespace CryptoRetriever {
         }
 
         public void OnMouseLeft() {
+            _isPanning = false;
             _mouseInView = false;
             _graphRenderer.DisableMouseHoverPoint();
         }
@@ -58,43 +59,64 @@ namespace CryptoRetriever {
 
                 Range currentDomain = _graphRenderer.GetDomain();
                 Range boundingDomain = _graphRenderer.GetBoundingDomain();
-                Range newDomain = new Range(
-                    currentDomain.Start - diffDataSpace.X,
-                    currentDomain.End - diffDataSpace.X
-                );
-
-                // Clamp
-                double domainStartDiff = currentDomain.Start - boundingDomain.Start;
-                double domainEndDiff = boundingDomain.End - currentDomain.End;
-                if (domainStartDiff < 0) {
-                    newDomain.Start += -domainStartDiff;
-                    newDomain.End += -domainStartDiff;
-                } else if (domainEndDiff < 0) {
-                    newDomain.Start += domainEndDiff;
-                    newDomain.End += domainEndDiff;
-                }
 
                 Range currentRange = _graphRenderer.GetRange();
                 Range boundingRange = _graphRenderer.GetBoundingRange();
-                Range newRange = new Range(
-                    currentRange.Start - diffDataSpace.Y,
-                    currentRange.End - diffDataSpace.Y
-                );
 
-                // Clamp
-                double rangeStartDiff = currentRange.Start - boundingRange.Start;
-                double rangeEndDiff = boundingRange.End - currentRange.End;
-                if (rangeStartDiff < 0) {
-                    newRange.Start += -rangeStartDiff;
-                    newRange.End += -rangeStartDiff;
-                } else if (rangeEndDiff < 0) {
-                    newRange.Start += rangeEndDiff;
-                    newRange.End += rangeEndDiff;
+                if ((currentDomain.Start >= boundingDomain.Start && diffDataSpace.X > 0) || (currentDomain.End <= boundingDomain.End && diffDataSpace.X < 0))
+                {
+                    Range newDomain = new Range(
+                        currentDomain.Start - diffDataSpace.X,
+                        currentDomain.End - diffDataSpace.X
+                    );
+
+                    // Clamp
+                    double domainStartDiff = currentDomain.Start - boundingDomain.Start;
+                    double domainEndDiff = boundingDomain.End - currentDomain.End;
+                    if (domainStartDiff < 0)
+                    {
+                        newDomain.Start += -domainStartDiff;
+                        newDomain.End += -domainStartDiff;
+                    }
+                    else if (domainEndDiff < 0)
+                    {
+                        newDomain.Start += domainEndDiff;
+                        newDomain.End += domainEndDiff;
+                    }
+
+                    if (newDomain.Start < boundingDomain.Start)
+					{
+                        newDomain.Start = boundingDomain.Start;
+					}
+
+                    // Update
+                    _graphRenderer.SetDomain(newDomain.Start, newDomain.End);
                 }
 
-                // Update
-                _graphRenderer.SetDomain(newDomain.Start, newDomain.End);
-                _graphRenderer.SetRange(newRange.Start, newRange.End);
+                if (!((currentRange.Start <= boundingRange.Start && diffDataSpace.Y > 0) || (currentRange.End >= boundingRange.End && diffDataSpace.Y < 0)))
+                { 
+                    Range newRange = new Range(
+                        currentRange.Start - diffDataSpace.Y,
+                        currentRange.End - diffDataSpace.Y
+                    );
+
+                    // Clamp
+                    double rangeStartDiff = currentRange.Start - boundingRange.Start;
+                    double rangeEndDiff = boundingRange.End - currentRange.End;
+                    if (rangeStartDiff < 0)
+                    {
+                        newRange.Start += -rangeStartDiff;
+                        newRange.End += -rangeStartDiff;
+                    }
+                    else if (rangeEndDiff < 0)
+                    {
+                        newRange.Start += rangeEndDiff;
+                        newRange.End += rangeEndDiff;
+                    }
+
+                    // Update
+                    _graphRenderer.SetRange(newRange.Start, newRange.End);                 
+                }
                 _graphRenderer.UpdateAll();
 
                 _lastDragPoint = positionPx;

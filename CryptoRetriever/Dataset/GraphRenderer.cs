@@ -818,6 +818,16 @@ namespace CryptoRetriever {
         public bool IsEqual(Range other) {
             return other.Start == Start && other.End == End;
         }
+
+        public static bool operator ==(Range a, Range b)
+		{
+            return a.IsEqual(b);
+		}
+
+        public static bool operator !=(Range a, Range b)
+        {
+            return !a.IsEqual(b);
+        }
     }
 
     class RenderParams {
